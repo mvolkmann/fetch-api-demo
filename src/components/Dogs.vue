@@ -51,6 +51,7 @@ export default {
         if (res.ok) {
           const dog = await res.json();
           this.dogs.push(dog);
+          this.id = null;
           this.breed = '';
           this.name = '';
         } else {
@@ -95,6 +96,9 @@ export default {
         if (res.ok) {
           const index = this.dogs.findIndex(dog => dog.id === id);
           this.$set(this.dogs, index, dog);
+          this.id = null;
+          this.breed = '';
+          this.name = '';
         } else {
           this.handleError(res.text);
         }
