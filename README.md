@@ -1,6 +1,9 @@
-# Dogs app
+# fetch-api-demo
 
-This is a web application and database for demonstrating use of the Fetch API.
+This is a web application (in Vue), REST server (Node.js and Express),
+and database (PostgreSQL) that demonstrates using the Fetch API.
+
+![screenshot](./fetch-api-demo.png)
 
 ## Steps to build and run server
 
@@ -46,10 +49,3 @@ npm run serve
 
 browse localhost:8080
 
-## To switch between HTTP and HTTPS
-
-- stop the servers (two if running locally, one on GCP)
-- modify the boolean variable `USE_HTTPS`
-  at the top of `src/fetch-util.js` and `server/server.js`
-- `npm run build`
-- `sudo -u postgres npm start`
