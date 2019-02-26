@@ -1,0 +1,23 @@
+{
+  "env": {
+    "es6": true, // adds knowledge of ES6 features; no higher env is available
+    "jest": true, // adds knowledge of Jest global variables
+    "node": true // adds knowledge of Node.js global variables
+  },
+  "parserOptions": {
+    "ecmaVersion": 9, // for ES2018
+    "sourceType": "module" // to use ES6 import and export
+  },
+  "extends": [
+    "eslint:recommended", // enforces rules with check mark at https://eslint.org/docs/rules/
+    "plugin:import/recommended", // lints ES6 import and export statements
+    "plugin:prettier/recommended" // turns off all ESLint rules that conflict with Prettier
+  ],
+  "plugins": [
+    "html", // lines JavaScript in <script> tags in HTML files
+    "prettier" // runs Prettier as an ESLint rule so ESLint code formatting rules are not needed
+  ],
+  "rules": {
+    "no-console": "off" // allow use of console functions
+  }
+}
