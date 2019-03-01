@@ -42,8 +42,14 @@ export default {
   },
   async mounted() {
     this.dogs = await getJson('dog');
+    console.log('mounted: dogs =', this.dogs);
   },
   methods: {
+    clear() {
+      this.id = null;
+      this.breed = '';
+      this.name = '';
+    },
     async createDog() {
       const {breed, name} = this;
       try {
@@ -51,9 +57,7 @@ export default {
         if (res.ok) {
           const dog = await res.json();
           this.dogs.push(dog);
-          this.id = null;
-          this.breed = '';
-          this.name = '';
+          this.clear();
         } else {
           this.handleError(res.text);
         }
@@ -66,6 +70,7 @@ export default {
         await deleteResource(`dog/${id}`);
         const index = this.dogs.findIndex(dog => dog.id === id);
         this.$delete(this.dogs, index);
+        this.clear();
       } catch (e) {
         this.handleError(e);
       }
@@ -96,9 +101,7 @@ export default {
         if (res.ok) {
           const index = this.dogs.findIndex(dog => dog.id === id);
           this.$set(this.dogs, index, dog);
-          this.id = null;
-          this.breed = '';
-          this.name = '';
+          this.clear();
         } else {
           this.handleError(res.text);
         }

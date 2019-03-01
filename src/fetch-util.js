@@ -23,7 +23,8 @@ export function deleteResource(urlSuffix) {
 export async function getJson(urlSuffix) {
   const url = URL_PREFIX + urlSuffix;
   const res = await fetch(url, options);
-  return res.json();
+  if (res.ok) return res.json();
+  console.error(await res.text());
 }
 
 export async function getText(urlSuffix) {
