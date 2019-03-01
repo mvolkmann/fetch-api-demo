@@ -1,11 +1,14 @@
 # fetch-api-demo
 
-This is a web application (in Vue), REST server (Node.js and Express),
-and database (PostgreSQL) that demonstrates using the Fetch API.
+This is a web application in Vue demonstrates
+use of the Fetch API to talk to a REST server.
+There are two implementations of the REST server,
+one in Node.js (using Express) and one in Go (using gin).
+Both talk to a PostgreSQL database.
 
 ![screenshot](./fetch-api-demo.png)
 
-## Steps to build and run server
+## To setup and start database server
 
 Install the Postgres database server.
 On a Mac this can be done with `brew install postgresql`
@@ -22,30 +25,33 @@ pg_ctl -D /usr/local/pgsql/data start
 
 # Create the "postgres" user.
 create user postgres (enter "postgres" for the password)
-
-cd server
-
-# Install all the server dependencies.
-npm install
-
-# Create/recreate database tables - This loses existing data!
-npm run dbsetup (recreates database tables)
-
-# Start Express server.
-npm start
 ```
 
-## Steps to build and run client
+## To use Go server (instead of Node.js server)
+
+```bash
+cd go
+go get github.com/gin-gonic/gin # REST server library
+go get github.com/lib/pq # PostgreSQL driver
+go run main.go
+```
+
+## To use Node.js server (instead of Go server)
+
+```bash
+cd server
+npm install # installs all dependencies
+npm run dbsetup # recreates database tables, losing data
+npm start # starts Express server
+```
+
+## To build and run web client
 
 cd to the top project directory.
 
 ```bash
-# Install all the client dependencies.
-npm install
-
-# Start the local web server.
-npm run serve
+npm install # installs all dependencies
+npm run serve # starts local HTTP server
 ```
 
 browse localhost:8080
-
