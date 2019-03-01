@@ -5,13 +5,13 @@
 package main
 
 import (
-	"database/sql"
+	"database/sql" // to open database connection
 	"fmt"
 	"net/http" // just for status constants
-	"strconv"
+	"strconv"  // convert between string and int values
 
-	"github.com/gin-gonic/gin"
-	_ "github.com/lib/pq"
+	"github.com/gin-gonic/gin" // HTTP web framework
+	_ "github.com/lib/pq"      // Postgres driver
 )
 
 const badRequest = http.StatusBadRequest
@@ -26,7 +26,7 @@ type Dog struct {
 	Name  string `json:"name"`
 }
 
-// A custom middleware to enable Cross-Origin Resource Sharing (CORS).
+// Custom middleware to enable Cross-Origin Resource Sharing (CORS).
 func cors(c *gin.Context) {
 	c.Header("Access-Control-Allow-Origin", "*")
 	c.Header("Access-Control-Allow-Methods", "GET,HEAD,PUT,POST,DELETE")
@@ -47,8 +47,8 @@ func main() {
 	connStr := "user=postgres dbname=survey sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		//log.Fatal(err)
-		fmt.Errorf("Error opening database connection: %s\n", err.Error())
+		//TODO: Why do "go vet" want a return value to be captured?
+		_ = fmt.Errorf("Error opening database connection: %s\n", err.Error())
 		return
 	}
 
@@ -107,11 +107,10 @@ func main() {
 		defer rows.Close()
 
 		dogs := []Dog{}
+		var id int
+		var breed, name string
 
 		for rows.Next() {
-			var id int
-			var breed string
-			var name string
 			if err := rows.Scan(&id, &breed, &name); err != nil {
 				c.String(serverError, err.Error())
 				return
@@ -124,8 +123,8 @@ func main() {
 
 	// Updates a dog.
 	router.PUT("/dog/:id", func(c *gin.Context) {
-		id, e := strconv.Atoi(c.Param("id"))
-		if e != nil {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
 			handleErrorMsg(c, badRequest, "id must be int")
 			return
 		}
@@ -142,11 +141,11 @@ func main() {
 			dog.Breed,
 			dog.Name,
 			id)
-		_, err := db.Query(sql)
-		if err != nil {
+		if _, err := db.Query(sql); err != nil {
 			handleError(c, serverError, err)
 			return
 		}
+
 		c.Status(ok)
 	})
 
@@ -159,11 +158,11 @@ func main() {
 		}
 
 		sql := fmt.Sprintf("delete from dog where id=%d", id)
-		_, err := db.Query(sql)
-		if err != nil {
+		if _, err := db.Query(sql); err != nil {
 			handleError(c, serverError, err)
 			return
 		}
+
 		c.Status(ok)
 	})
 
