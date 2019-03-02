@@ -20,13 +20,15 @@ const port = 1919
 const serverError = http.StatusInternalServerError
 
 // Dog describes a dog.
+// We don't want uppercase names in JSON that is produced,
+// so alternate names are provided using struct "tags".
 type Dog struct {
 	ID    int    `json:"id"`
 	Breed string `json:"breed"`
 	Name  string `json:"name"`
 }
 
-// Custom middleware to enable Cross-Origin Resource Sharing (CORS).
+// Custom middleware to enable Cross-Origin Resource Sharing (CORS)
 func cors(c *gin.Context) {
 	c.Header("Access-Control-Allow-Origin", "*")
 	c.Header("Access-Control-Allow-Methods", "GET,HEAD,PUT,POST,DELETE")
@@ -39,7 +41,6 @@ func handleError(c *gin.Context, statusCode int, err error) {
 
 func handleErrorMsg(c *gin.Context, statusCode int, msg string) {
 	c.String(statusCode, msg)
-	//TODO: Use c.Error(err)?
 }
 
 func main() {
@@ -156,6 +157,7 @@ func main() {
 			handleErrorMsg(c, badRequest, "id must be int")
 			return
 		}
+		fmt.Printf("deleting id %d\n", id)
 
 		sql := fmt.Sprintf("delete from dog where id=%d", id)
 		if _, err := db.Query(sql); err != nil {
