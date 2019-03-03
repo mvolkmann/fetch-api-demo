@@ -7,6 +7,7 @@ import (
 	"database/sql" // to open database connection
 	"errors"
 	"fmt"
+	"log"
 	"net/http" // for status constants
 	"strconv"  // to convert between string and int values
 
@@ -60,9 +61,7 @@ func main() {
 	connStr := "user=postgres dbname=survey sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		//TODO: Why does "go vet" want a return value to be captured?
-		_ = fmt.Errorf("error opening database connection: %s", err.Error())
-		return
+		log.Fatal(err)
 	}
 
 	// Configure HTTP request routes.
