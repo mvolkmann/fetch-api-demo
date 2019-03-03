@@ -61,7 +61,7 @@ func main() {
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		//TODO: Why do "go vet" want a return value to be captured?
-		_ = fmt.Errorf("Error opening database connection: %s\n", err.Error())
+		_ = fmt.Errorf("error opening database connection: %s", err.Error())
 		return
 	}
 
