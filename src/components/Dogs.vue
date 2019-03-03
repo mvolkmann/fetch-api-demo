@@ -41,8 +41,11 @@ export default {
     };
   },
   async mounted() {
-    this.dogs = await getJson('dog');
-    console.log('mounted: dogs =', this.dogs);
+    try {
+      this.dogs = await getJson('dog');
+    } catch (e) {
+      this.handleError(e);
+    }
   },
   methods: {
     clear() {
@@ -50,64 +53,50 @@ export default {
       this.breed = '';
       this.name = '';
     },
-    async createDog() {
+    createDog() {
       const {breed, name} = this;
-      try {
-        const res = await postJson('dog', {breed, name});
-        if (res.ok) {
-          const dog = await res.json();
-          this.dogs.push(dog);
-          this.clear();
-        } else {
-          this.handleError(res.text);
-        }
-      } catch (e) {
-        this.handleError(e);
-      }
+      this.handlePromise(postJson('dog', {breed, name}), async res => {
+        const dog = await res.json();
+        this.dogs.push(dog);
+      });
     },
-    async deleteDog(id) {
-      try {
-        await deleteResource(`dog/${id}`);
+    deleteDog(id) {
+      this.handlePromise(deleteResource(`dog/${id}`), () => {
         const index = this.dogs.findIndex(dog => dog.id === id);
         this.$delete(this.dogs, index);
-        this.clear();
-      } catch (e) {
-        this.handleError(e);
-      }
-    },
-    async getDogs() {
-      try {
-        this.dogs = await getJson('dog');
-      } catch (e) {
-        this.handleError(e);
-      }
+      });
     },
     handleError(e) {
       const msg = e instanceof Error ? e.message : e;
       alert(msg);
+    },
+    async handlePromise(promise, callback) {
+      try {
+        const res = await promise;
+        if (res.ok) {
+          callback(res);
+          this.clear();
+        } else {
+          this.handleError(await res.text());
+        }
+      } catch (e) {
+        this.handleError(e);
+      }
     },
     selectDog(dog) {
       this.breed = dog.breed;
       this.id = dog.id;
       this.name = dog.name;
     },
-    async updateDog(dog) {
+    updateDog(dog) {
       const {breed, id, name} = this;
       dog.id = id;
       dog.breed = breed;
       dog.name = name;
-      try {
-        const res = await putJson(`dog/${id}`, dog);
-        if (res.ok) {
-          const index = this.dogs.findIndex(dog => dog.id === id);
-          this.$set(this.dogs, index, dog);
-          this.clear();
-        } else {
-          this.handleError(res.text);
-        }
-      } catch (e) {
-        this.handleError(e);
-      }
+      this.handlePromise(putJson(`dog/${id}`, dog), () => {
+        const index = this.dogs.findIndex(dog => dog.id === id);
+        this.$set(this.dogs, index, dog);
+      });
     }
   }
 };

@@ -1,20 +1,22 @@
 // go get github.com/gin-gonic/gin - for REST server library
-// go get github.com/codegangsta/gin - for live reload of Go servers
 // go get github.com/lib/pq - PostgreSQL driver
-// To run, enter "gin run main.go".
+// To run, enter "go run main.go".
 package main
 
 import (
 	"database/sql" // to open database connection
+	"errors"
 	"fmt"
-	"net/http" // just for status constants
-	"strconv"  // convert between string and int values
+	"net/http" // for status constants
+	"strconv"  // to convert between string and int values
 
 	"github.com/gin-gonic/gin" // HTTP web framework
 	_ "github.com/lib/pq"      // Postgres driver
 )
 
+const allowOrigin = "http://localhost:8080"
 const badRequest = http.StatusBadRequest
+const forbidden = http.StatusForbidden
 const ok = http.StatusOK
 const port = 1919
 const serverError = http.StatusInternalServerError
@@ -28,19 +30,29 @@ type Dog struct {
 	Name  string `json:"name"`
 }
 
-// Custom middleware to enable Cross-Origin Resource Sharing (CORS)
+func shouldAllow(c *gin.Context) bool {
+	origin := c.Request.Header["Origin"][0]
+	return origin == allowOrigin
+}
+
+// Custom middleware to enable CORS
 func cors(c *gin.Context) {
-	c.Header("Access-Control-Allow-Origin", "*")
-	c.Header("Access-Control-Allow-Methods", "GET,HEAD,PUT,POST,DELETE")
-	c.Header("Access-Control-Allow-Headers", "Accept,Content-Type,Content-Length,Accept-Encoding")
+	if shouldAllow(c) {
+		c.Header("Access-Control-Allow-Origin", allowOrigin)
+	} else {
+		c.Status(forbidden)
+	}
+}
+
+func options(c *gin.Context) {
+	c.Header("Access-Control-Allow-Methods", "DELETE,GET,POST,PUT")
+	// Must explicitly allow Content-Type header for JSON bodies.
+	c.Header("Access-Control-Allow-Headers", "Content-Type")
+	c.Status(ok)
 }
 
 func handleError(c *gin.Context, statusCode int, err error) {
-	handleErrorMsg(c, statusCode, err.Error())
-}
-
-func handleErrorMsg(c *gin.Context, statusCode int, msg string) {
-	c.String(statusCode, msg)
+	c.String(statusCode, err.Error())
 }
 
 func main() {
@@ -57,19 +69,15 @@ func main() {
 	router := gin.Default()
 	router.Use(cors)
 
+	// Required for preflight OPTIONS request before POST to /dog.
+	router.OPTIONS("/dog", options)
+
+	// Required for preflight OPTIONS request before PUT to /dog.
+	router.OPTIONS("/dog/:id", options)
+
 	// Heartbeat
 	router.GET("/", func(c *gin.Context) {
 		c.String(ok, "I'm alive!")
-	})
-
-	// Required for preflight OPTIONS request before POST to /dog.
-	router.OPTIONS("/dog", func(c *gin.Context) {
-		c.Status(ok)
-	})
-
-	// Required for preflight OPTIONS request before PUT to /dog.
-	router.OPTIONS("/dog/:id", func(c *gin.Context) {
-		c.Status(ok)
 	})
 
 	// Creates a dog.
@@ -99,6 +107,11 @@ func main() {
 
 	// Retrieves all the dogs.
 	router.GET("/dog", func(c *gin.Context) {
+		if !shouldAllow(c) {
+			c.Status(forbidden)
+			return
+		}
+
 		rows, err := db.Query("select id, breed, name from dog")
 		if err != nil {
 			c.String(serverError, err.Error())
@@ -126,7 +139,7 @@ func main() {
 	router.PUT("/dog/:id", func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
-			handleErrorMsg(c, badRequest, "id must be int")
+			handleError(c, badRequest, errors.New("id must be int"))
 			return
 		}
 
@@ -154,7 +167,7 @@ func main() {
 	router.DELETE("/dog/:id", func(c *gin.Context) {
 		id, e := strconv.Atoi(c.Param("id"))
 		if e != nil {
-			handleErrorMsg(c, badRequest, "id must be int")
+			handleError(c, badRequest, errors.New("id must be int"))
 			return
 		}
 		fmt.Printf("deleting id %d\n", id)
