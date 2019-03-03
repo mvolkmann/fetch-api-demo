@@ -3,6 +3,7 @@
 node_modules
 server/node_modules
 /dist
+/go/main
 
 # Log files
 npm-debug.log*

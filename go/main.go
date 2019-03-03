@@ -60,7 +60,7 @@ func main() {
 	connStr := "user=postgres dbname=survey sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		//TODO: Why do "go vet" want a return value to be captured?
+		//TODO: Why does "go vet" want a return value to be captured?
 		_ = fmt.Errorf("error opening database connection: %s", err.Error())
 		return
 	}
@@ -69,10 +69,10 @@ func main() {
 	router := gin.Default()
 	router.Use(cors)
 
-	// Required for preflight OPTIONS request before POST to /dog.
+	// Required for preflight OPTIONS request before POST.
 	router.OPTIONS("/dog", options)
 
-	// Required for preflight OPTIONS request before PUT to /dog.
+	// Required for preflight OPTIONS request before PUT.
 	router.OPTIONS("/dog/:id", options)
 
 	// Heartbeat
@@ -170,7 +170,6 @@ func main() {
 			handleError(c, badRequest, errors.New("id must be int"))
 			return
 		}
-		fmt.Printf("deleting id %d\n", id)
 
 		sql := fmt.Sprintf("delete from dog where id=%d", id)
 		if _, err := db.Query(sql); err != nil {
