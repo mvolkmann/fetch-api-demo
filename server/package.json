@@ -6,6 +6,7 @@
     "dbi": "psql -Upostgres -d survey",
     "dbsetup": "psql -Upostgres -d survey -f database.sql",
     "dbstart": "pg_ctl -D /usr/local/var/postgres start",
+    "dbstop": "pg_ctl -D /usr/local/var/postgres stop",
     "format": "prettier --write src/**/*.js",
     "lint": "eslint src/** --ext .js",
     "start": "nodemon src/server.js"

@@ -19,7 +19,6 @@ const allowOrigin = "http://localhost:8080"
 const badRequest = http.StatusBadRequest
 const forbidden = http.StatusForbidden
 const ok = http.StatusOK
-const port = 1919
 const serverError = http.StatusInternalServerError
 
 // Dog describes a dog.
@@ -68,10 +67,10 @@ func main() {
 	router := gin.Default()
 	router.Use(cors)
 
-	// Required for preflight OPTIONS request before POST.
+	// For OPTIONS request before POST.
 	router.OPTIONS("/dog", options)
 
-	// Required for preflight OPTIONS request before PUT.
+	// For OPTIONS request before PUT and DELETE.
 	router.OPTIONS("/dog/:id", options)
 
 	// Heartbeat
@@ -179,6 +178,5 @@ func main() {
 		c.Status(ok)
 	})
 
-	fmt.Printf("listening on port %d\n", port)
-	router.Run(":" + strconv.Itoa(port))
+	router.Run(":1919")
 }
