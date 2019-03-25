@@ -2,7 +2,7 @@ const express = require('express');
 const api = express.Router();
 
 const PgConnection = require('postgresql-easy');
-const dbConfig = {database: 'survey'};
+const dbConfig = {database: 'survey', user: 'postgres'};
 const pg = new PgConnection(dbConfig);
 
 function handleError(res, action, error) {
