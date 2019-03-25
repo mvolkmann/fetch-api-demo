@@ -15,13 +15,9 @@ const app = express();
 app.use(cors());
 app.use(morgan('short'));
 app.use(express.static(path.resolve(__dirname, '../dist')));
-app.use(bodyParser.json({limit: '4mb'}));
+app.use(bodyParser.json());
 
 app.use('/dog', dogApi);
-
-app.get('/heartbeat', async (req, res) => {
-  res.send('I am alive!');
-});
 
 if (USE_HTTPS) {
   const options = {
