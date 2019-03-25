@@ -5,58 +5,42 @@ const PgConnection = require('postgresql-easy');
 const dbConfig = {database: 'survey', user: 'postgres'};
 const pg = new PgConnection(dbConfig);
 
-function handleError(res, action, error) {
-  const msg = error ? `failed to ${action}: ${error.message}` : action;
-  console.error(msg);
-  res.status(500).send(msg);
+async function tryIt(res, action, fn) {
+  try {
+    let result = await fn();
+    // Don't return empty arrays returned when by delete and put.
+    if (Array.isArray(result) && result.length === 0) result = null;
+    res.status(200).send(result);
+  } catch (e) {
+    const msg = 'failed to ' + action + (e ? `: ${e.message}` : '');
+    console.error(msg);
+    res.status(500).send(msg);
+  }
 }
 
-api.post('/', async (req, res) => {
+api.post('/', (req, res) => {
   const {breed, name} = req.body;
-
-  try {
-    const dog = {breed, name};
-    const id = await pg.insert('dog', {breed, name});
-    if (id) {
-      dog.id = id;
-      res.send(dog);
-    } else {
-      handleError(res, 'create dog');
-    }
-  } catch (e) {
-    handleError(res, 'create dog', e);
-  }
+  const dog = {breed, name};
+  tryIt(res, 'create dog', async () => {
+    dog.id = await pg.insert('dog', dog);
+    if (!dog.id) throw new Error('failed to insert dog');
+    return dog;
+  });
 });
 
-api.get('/', async (req, res) => {
-  try {
-    const dogs = await pg.query('select * from dog');
-    res.send(dogs);
-  } catch (e) {
-    handleError(res, 'get dogs', e);
-  }
-});
+api.get('/', (req, res) =>
+  tryIt(res, 'get dogs', () => pg.query('select * from dog'))
+);
 
-api.put('/:id', async (req, res) => {
+api.put('/:id', (req, res) => {
   const {id} = req.params;
   const {breed, name} = req.body;
-
-  try {
-    await pg.updateById('dog', id, {breed, name});
-    res.sendStatus(200);
-  } catch (e) {
-    handleError(res, 'update dog', e);
-  }
+  tryIt(res, 'update dog', () => pg.updateById('dog', id, {breed, name}));
 });
 
-api.delete('/:id', async (req, res) => {
+api.delete('/:id', (req, res) => {
   const {id} = req.params;
-  try {
-    await pg.deleteById('dog', id);
-    res.sendStatus(200);
-  } catch (e) {
-    handleError(res, `delete dog ${id}`, e);
-  }
+  tryIt(res, 'delete dog', () => pg.deleteById('dog', id));
 });
 
 module.exports = api;
