@@ -8,9 +8,8 @@ const pg = new PgConnection(dbConfig);
 async function tryIt(res, action, fn) {
   try {
     let result = await fn();
-    // Don't return empty arrays returned when by delete and put.
-    if (Array.isArray(result) && result.length === 0) result = null;
-    res.status(200).send(result);
+    const sendResult = action.startsWith('get') || action.startsWith('create');
+    res.status(200).send(sendResult ? result : null);
   } catch (e) {
     const msg = 'failed to ' + action + (e ? `: ${e.message}` : '');
     console.error(msg);
